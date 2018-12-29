@@ -29,7 +29,9 @@
             "styles": [
               "src/styles.less"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/phaser-ce/build/phaser.js"
+            ]
           },
           "configurations": {
             "production": {
