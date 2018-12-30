@@ -12,6 +12,11 @@ export module AcousterGame {
     bodyW: number;
     bodyH: number;
     bodyHSquat: number;
+    velocityX: number;
+    velocityJump: number;
+    respawnX: number;
+    respawnY: number;
+    gravity: number;
     keyLeft: Phaser.Key;
     keyRight: Phaser.Key;
     keyUp: Phaser.Key;
@@ -26,7 +31,7 @@ export module AcousterGame {
     private isSquatting: boolean;
     
     constructor(
-      game: Phaser.Game,
+      private game: Phaser.Game,
       private bullets: Phaser.Group,
       private config: ScrollerPlayerConfig,
     ) {
@@ -47,8 +52,9 @@ export module AcousterGame {
       this.sprite.anchor.setTo(0.5, 1);
       this.setBodyDims(config.bodyW, config.bodyH);
       this.sprite.scale.setTo(config.scaleFactor, config.scaleFactor);
-      this.sprite.body.gravity.y = 1000;
+      this.sprite.body.gravity.y = config.gravity;
       this.sprite.animations.play('stand');
+      this.sprite.position.setTo(config.respawnX, config.respawnY);
 
       // player chunks
       this.chunks = game.add.emitter(0, 0, 10);
@@ -68,16 +74,23 @@ export module AcousterGame {
     }
 
     update(game: Phaser.Game) {
+
+      if (!this.sprite.alive) {
+        if (this.config.keyFire.isDown)
+          this.respawn();
+        return;
+      }
+
       // .... handle keys
       if (!this.isDead) {
         if (this.config.keyLeft.isDown)
-          this.sprite.body.velocity.x = -350;
+          this.sprite.body.velocity.x = -this.config.velocityX;
         else if (this.config.keyRight.isDown)
-          this.sprite.body.velocity.x = 350;
+          this.sprite.body.velocity.x = this.config.velocityX;
         else
           this.sprite.body.velocity.x = 0;
         if (this.config.keyUp.isDown && this.sprite.body.touching.down)
-          this.sprite.body.velocity.y = -500;
+          this.sprite.body.velocity.y = -this.config.velocityJump;
         if (this.config.keyDown.isDown && this.sprite.body.touching.down) {
           this.isSquatting = true;
           this.sprite.body.velocity.x = 0;
@@ -111,10 +124,10 @@ export module AcousterGame {
       }
 
       // TODO: bug here
-      // if (this.sprite.animations.currentAnim.name == 'squat')
-      //   this.setBodyDims(this.config.bodyW, this.config.bodyHSquat);
-      // else
-      //   this.setBodyDims(this.config.bodyW, this.config.bodyH);
+      if (this.sprite.animations.currentAnim.name == 'squat')
+        this.setBodyDims(this.config.bodyW, this.config.bodyHSquat);
+      else
+        this.setBodyDims(this.config.bodyW, this.config.bodyH);
 
       if (this.sprite.body.velocity.x < 0)
         this.sprite.scale.x = -Math.abs(this.sprite.scale.x);
@@ -129,6 +142,8 @@ export module AcousterGame {
 
     respawn() {
       this.isDead = false;
+      this.bulletTime = this.game.time.now + 200;
+      this.sprite.position.setTo(this.config.respawnX, this.config.respawnY);
       this.sprite.revive();
     }
 
@@ -137,8 +152,8 @@ export module AcousterGame {
         var bullet = this.bullets.getFirstExists(false);
         if (bullet) {
           let sign = Math.sign(this.sprite.scale.x);
-          bullet.reset(this.sprite.x + sign * 30, this.sprite.y - 75);
-          bullet.body.velocity.x = sign * 500;
+          bullet.reset(this.sprite.x + sign * 45, this.sprite.y - 75);
+          bullet.body.velocity.x = sign * 750;
           this.bulletTime = game.time.now + 200;
         }
       }
@@ -180,6 +195,10 @@ export module AcousterGame {
     }
 
     create(game: Phaser.Game) {
+      const playerGravity = 1500;
+      const playerVelocityX = 350;
+      const playerVelocityJump = 800;
+
       game.stage.backgroundColor = "#c4ebff";
 
       // Start the Arcade physics system (for movements and collisions)
@@ -193,16 +212,13 @@ export module AcousterGame {
       this.coins = game.add.group();
       this.enemies = game.add.group();
 
-      let platform1 = game.add.sprite(game.world.centerX, game.world.centerY + 100, 'platform1');
-      platform1.anchor.setTo(0.5, 0);
-      platform1.body.immovable = true;
-      this.walls.add(platform1);
+      this.addPlatform(game, 100, game.world.centerY + 150);
+      this.addPlatform(game, game.world.width-100, game.world.centerY + 150);
+      this.addPlatform(game, game.world.centerX, game.world.centerY);
+      this.addPlatform(game, 50, game.world.centerY - 150);
+      this.addPlatform(game, game.world.width-50, game.world.centerY - 150);
 
-      let fire1 = game.add.sprite(game.world.centerX + 200, game.world.centerY + 100, 'flame');
-      fire1.animations.add('flame', _.range(0, 31), 20, true);
-      fire1.animations.play('flame');
-      fire1.anchor.setTo(0.5, 0.85);
-      this.enemies.add(fire1);
+      this.addFire(game, game.world.centerX, game.world.centerY);
 
       let lava = game.add.sprite(game.world.centerX, game.world.centerY + 250, 'lava');
       lava.anchor.setTo(0.5, 0);
@@ -227,6 +243,11 @@ export module AcousterGame {
         bodyW: 200, // NOTE: size of each frame in spritesheet: 484 x 534
         bodyH: 500,
         bodyHSquat: 220,
+        gravity: playerGravity,
+        velocityX: playerVelocityX,
+        velocityJump: playerVelocityJump,
+        respawnX: game.world.centerX - 300,
+        respawnY: game.world.centerY - 200,
         keyLeft: game.input.keyboard.addKey(Phaser.Keyboard.LEFT),
         keyRight: game.input.keyboard.addKey(Phaser.Keyboard.RIGHT),
         keyUp: game.input.keyboard.addKey(Phaser.Keyboard.UP),
@@ -235,8 +256,27 @@ export module AcousterGame {
       });
       this.players.add(player1.sprite);
       this.playerz.push(player1);
-      player1.sprite.position.setTo(game.world.centerX-200, game.world.centerY - 200);
 
+      let player2 = new ScrollerPlayer(game, this.bullets, <ScrollerPlayerConfig> {
+        assetSprite: 'player1',
+        assetChunks: 'player1-chunk',
+        scaleFactor: 0.2,
+        bodyW: 200, // NOTE: size of each frame in spritesheet: 484 x 534
+        bodyH: 500,
+        bodyHSquat: 220,
+        gravity: playerGravity,
+        velocityX: playerVelocityX,
+        velocityJump: playerVelocityJump,
+        respawnX: game.world.centerX + 300,
+        respawnY: game.world.centerY,
+        keyLeft: game.input.keyboard.addKey(Phaser.Keyboard.A),
+        keyRight: game.input.keyboard.addKey(Phaser.Keyboard.D),
+        keyUp: game.input.keyboard.addKey(Phaser.Keyboard.W),
+        keyDown: game.input.keyboard.addKey(Phaser.Keyboard.S),
+        keyFire: game.input.keyboard.addKey(Phaser.Keyboard.Q),
+      });
+      this.players.add(player2.sprite);
+      this.playerz.push(player2);
     }
 
     update(game: Phaser.Game) {
@@ -245,6 +285,8 @@ export module AcousterGame {
       game.physics.arcade.overlap(this.players, this.coins, this.callback_takeCoin, null, this);
       // Call the 'restart' function when the player touches the enemy
       game.physics.arcade.overlap(this.players, this.enemies, this.callback_death, null, this);
+      // collide with bullets
+      game.physics.arcade.overlap(this.players, this.bullets, this.callback_deathByBullet, null, this);
 
       this.playerz.forEach(player => {
         player.update(game);
@@ -253,9 +295,34 @@ export module AcousterGame {
 
     render(game: Phaser.Game) {
       // game.debug.bodyInfo(this.player1, 32, 32);
-      this.playerz.forEach(player => {
-        // game.debug.body(player.sprite);
-      });
+      // this.playerz.forEach(player => {
+      //   game.debug.body(player.sprite);
+      // });
+      // this.enemies.children.forEach(sss => {
+      //   game.debug.body(sss as Phaser.Sprite);
+      // });
+      // this.bullets.children.forEach(sss => {
+      //   game.debug.body(sss as Phaser.Sprite);
+      // });
+    }
+
+    //----------------------------------------------------------------------------------------------------
+
+    private addPlatform(game: Phaser.Game, x: number, y: number) {
+      let platform1 = game.add.sprite(x, y, 'platform1');
+      platform1.scale.setTo(0.5, 0.5);
+      platform1.anchor.setTo(0.5, 0);
+      platform1.body.immovable = true;
+      this.walls.add(platform1);
+    }
+
+    private addFire(game: Phaser.Game, x: number, y: number): any {
+      let fire1 = game.add.sprite(x, y, 'flame');
+      fire1.animations.add('flame', _.range(0, 31), 20, true);
+      fire1.animations.play('flame');
+      fire1.anchor.setTo(0.5, 0.85);
+      fire1.body.setSize(50, 80, 10, 40);
+      this.enemies.add(fire1);
     }
 
     callback_takeCoin(player: Phaser.Sprite, coin: Phaser.Sprite) {
@@ -263,6 +330,12 @@ export module AcousterGame {
       console.log(`coin!!!!!!`);
     }
     callback_death(player: Phaser.Sprite, lava: Phaser.Sprite) {
+      let sPlayer = this.playerz.find(x => x.sprite == player);
+      sPlayer.diePainfully();
+    }
+
+    callback_deathByBullet(player: Phaser.Sprite, bullet: Phaser.Sprite) {
+      bullet.kill();
       let sPlayer = this.playerz.find(x => x.sprite == player);
       sPlayer.diePainfully();
     }
