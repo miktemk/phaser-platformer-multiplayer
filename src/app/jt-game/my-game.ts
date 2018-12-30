@@ -176,12 +176,14 @@ export module AcousterGame {
     enemies: Phaser.Group;
     bullets: Phaser.Group;
     playerz: ScrollerPlayer[] = [];
+    explosions: Phaser.Group;
     
     preload(game: Phaser.Game) {
       game.load.image('rock', AssetUrls.rock);
       game.load.image('lava', AssetUrls.lava);
       game.load.image('platform1', AssetUrls.platform1);
       game.load.spritesheet('flame', AssetUrls.flame, 64, 128, 32);
+      game.load.spritesheet('explosion', AssetUrls.explosion, 192, 192, 20);
       game.load.atlasJSONHash(
         'player1',
         AssetUrls.debugPlayerSprite.img,
@@ -236,6 +238,14 @@ export module AcousterGame {
       this.bullets.setAll(nameof<Phaser.Sprite>('outOfBoundsKill'), true);
       this.bullets.setAll(nameof<Phaser.Sprite>('checkWorldBounds'), true);
       
+      this.explosions = game.add.group();
+      this.explosions.createMultiple(30, 'explosion');
+      this.explosions.forEach(explosion => {
+        explosion.scale.setTo(0.8, 0.8);
+        explosion.anchor.setTo(0.5, 0.5);
+        explosion.animations.add('kaboom', _.range(0, 20), 60, true);
+      }, game);
+
       let player1 = new ScrollerPlayer(game, this.bullets, <ScrollerPlayerConfig> {
         assetSprite: 'player1',
         assetChunks: 'player1-chunk',
@@ -281,18 +291,30 @@ export module AcousterGame {
 
     update(game: Phaser.Game) {
       game.physics.arcade.collide(this.players, this.walls);
-      // Call the 'takeCoin' function when the player takes a coin
-      game.physics.arcade.overlap(this.players, this.coins, this.callback_takeCoin, null, this);
-      // Call the 'restart' function when the player touches the enemy
-      game.physics.arcade.overlap(this.players, this.enemies, this.callback_death, null, this);
-      // collide with bullets
-      game.physics.arcade.overlap(this.players, this.bullets, this.callback_deathByBullet, null, this);
+      game.physics.arcade.overlap(this.players, this.coins, (player: Phaser.Sprite, coin: Phaser.Sprite) => {
+        coin.kill();
+        console.log(`TODO: coin!!!!!!`);
+      }, null, game);
+      game.physics.arcade.overlap(this.players, this.enemies, (player: Phaser.Sprite, lava: Phaser.Sprite) => {
+        let sPlayer = this.playerz.find(x => x.sprite == player);
+        sPlayer.diePainfully();
+      }, null, game);
+      game.physics.arcade.overlap(this.bullets, this.walls, (bullet: Phaser.Sprite, wall: Phaser.Sprite) => {
+        bullet.kill();
+        this.kaboomHere(bullet.x, bullet.y);
+      }, null, game);
+      game.physics.arcade.overlap(this.players, this.bullets, (player: Phaser.Sprite, bullet: Phaser.Sprite) => {
+        bullet.kill();
+        this.kaboomHere(bullet.x, bullet.y);
+        let sPlayer = this.playerz.find(x => x.sprite == player);
+        sPlayer.diePainfully();
+      }, null, game);
 
       this.playerz.forEach(player => {
         player.update(game);
       });
     }
-
+    
     render(game: Phaser.Game) {
       // game.debug.bodyInfo(this.player1, 32, 32);
       // this.playerz.forEach(player => {
@@ -325,19 +347,10 @@ export module AcousterGame {
       this.enemies.add(fire1);
     }
 
-    callback_takeCoin(player: Phaser.Sprite, coin: Phaser.Sprite) {
-      coin.kill();
-      console.log(`coin!!!!!!`);
-    }
-    callback_death(player: Phaser.Sprite, lava: Phaser.Sprite) {
-      let sPlayer = this.playerz.find(x => x.sprite == player);
-      sPlayer.diePainfully();
-    }
-
-    callback_deathByBullet(player: Phaser.Sprite, bullet: Phaser.Sprite) {
-      bullet.kill();
-      let sPlayer = this.playerz.find(x => x.sprite == player);
-      sPlayer.diePainfully();
+    private kaboomHere(x: number, y: number): any {
+      var explosion = this.explosions.getFirstExists(false);
+      explosion.reset(x, y);
+      explosion.play('kaboom', 30, false, true);
     }
 
   }
