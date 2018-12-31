@@ -65,6 +65,8 @@ export module AcousterGame {
       this.chunks.gravity = new Phaser.Point(0, 3000);
 
       // misc initialization
+      this.sprite.body.collideWorldBounds = true;
+      // this.sprite.body.onWorldBounds = true;
       this.bulletTime = game.time.now + 200;
     }
 
@@ -177,6 +179,7 @@ export module AcousterGame {
     bullets: Phaser.Group;
     playerz: ScrollerPlayer[] = [];
     explosions: Phaser.Group;
+    lava: Phaser.TileSprite;
     
     preload(game: Phaser.Game) {
       game.load.image('rock', AssetUrls.rock);
@@ -187,6 +190,11 @@ export module AcousterGame {
       game.load.atlasJSONHash(
         'player1',
         AssetUrls.debugPlayerSprite.img,
+        AssetUrls.debugPlayerSprite.json,
+        Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
+      game.load.atlasJSONHash(
+        'player2',
+        AssetUrls.debugPlayerSprite.imgBlue,
         AssetUrls.debugPlayerSprite.json,
         Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
       game.load.atlasJSONHash(
@@ -222,10 +230,12 @@ export module AcousterGame {
 
       this.addFire(game, game.world.centerX, game.world.centerY);
 
-      let lava = game.add.sprite(game.world.centerX, game.world.centerY + 250, 'lava');
-      lava.anchor.setTo(0.5, 0);
-      lava.body.immovable = true;
-      this.enemies.add(lava);
+      this.lava = game.add.tileSprite(0, game.world.centerY + 250, 800, 100, 'lava');
+      //this.lava.anchor.setTo(0.5, 0);
+      this.lava.body.immovable = true;
+      this.lava.fixedToCamera = true;
+
+      this.enemies.add(this.lava);
 
       this.bullets = game.add.group();
       this.bullets.enableBody = true;
@@ -268,7 +278,7 @@ export module AcousterGame {
       this.playerz.push(player1);
 
       let player2 = new ScrollerPlayer(game, this.bullets, <ScrollerPlayerConfig> {
-        assetSprite: 'player1',
+        assetSprite: 'player2',
         assetChunks: 'player1-chunk',
         scaleFactor: 0.2,
         bodyW: 200, // NOTE: size of each frame in spritesheet: 484 x 534
@@ -277,16 +287,29 @@ export module AcousterGame {
         gravity: playerGravity,
         velocityX: playerVelocityX,
         velocityJump: playerVelocityJump,
-        respawnX: game.world.centerX + 300,
+        respawnX: game.world.centerX - 300,
         respawnY: game.world.centerY,
-        keyLeft: game.input.keyboard.addKey(Phaser.Keyboard.A),
-        keyRight: game.input.keyboard.addKey(Phaser.Keyboard.D),
-        keyUp: game.input.keyboard.addKey(Phaser.Keyboard.W),
-        keyDown: game.input.keyboard.addKey(Phaser.Keyboard.S),
-        keyFire: game.input.keyboard.addKey(Phaser.Keyboard.Q),
+        
+        // test on computer
+        // keyLeft: game.input.keyboard.addKey(Phaser.Keyboard.A),
+        // keyRight: game.input.keyboard.addKey(Phaser.Keyboard.D),
+        // keyUp: game.input.keyboard.addKey(Phaser.Keyboard.W),
+        // keyDown: game.input.keyboard.addKey(Phaser.Keyboard.S),
+        // keyFire: game.input.keyboard.addKey(Phaser.Keyboard.Q),
+
+        // alphagrip
+        keyLeft: game.input.keyboard.addKey(Phaser.Keyboard.C),
+        keyRight: game.input.keyboard.addKey(Phaser.Keyboard.Y),
+        keyUp: game.input.keyboard.addKey(Phaser.Keyboard.Z),
+        keyDown: game.input.keyboard.addKey(Phaser.Keyboard.K),
+        keyFire: game.input.keyboard.addKey(Phaser.Keyboard.H),
       });
       this.players.add(player2.sprite);
       this.playerz.push(player2);
+
+      const ySkyAboveBounds = 500;
+      // this.game.world.setBounds(0, -ySkyAboveBounds, 8000, this.game.height + ySkyAboveBounds);
+      this.game.world.setBounds(0, -ySkyAboveBounds, this.game.width, this.game.height + ySkyAboveBounds);
     }
 
     update(game: Phaser.Game) {
@@ -309,10 +332,15 @@ export module AcousterGame {
         let sPlayer = this.playerz.find(x => x.sprite == player);
         sPlayer.diePainfully();
       }, null, game);
+      game.physics.arcade.collide(this.players, this.world);
 
       this.playerz.forEach(player => {
         player.update(game);
       });
+
+      // this.game.camera.x += 1;
+      // console.log(this.game.camera.x);
+      this.lava.tilePosition.x = -1.1 * this.game.camera.x;
     }
     
     render(game: Phaser.Game) {

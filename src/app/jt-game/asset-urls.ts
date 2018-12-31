@@ -8,6 +8,9 @@ export const AssetUrls = {
     // img: 'assets/img/atlas/satlas-debug-player.png',
     // json: 'assets/img/atlas/satlas-debug-player.json',
     img: 'assets/img/spritesheets/ss-debug-player.png',
+    imgRed: 'assets/img/spritesheets/ss-debug-player-red.png',
+    imgBlue: 'assets/img/spritesheets/ss-debug-player-blue.png',
+    imgGreen: 'assets/img/spritesheets/ss-debug-player-green.png',
     json: 'assets/img/spritesheets/ss-debug-player.json',
   },
   debugPlayerSpriteChunk: {
