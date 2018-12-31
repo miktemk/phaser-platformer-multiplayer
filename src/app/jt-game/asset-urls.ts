@@ -17,6 +17,12 @@ export const AssetUrls = {
     img: 'assets/img/atlas/satlas-debug-sprite-chunk.png',
     json: 'assets/img/atlas/satlas-debug-sprite-chunk.json',
   },
-
+  dragon: {
+    img: 'assets/img/spritesheets/ss-dragon.png',
+    imgRed: 'assets/img/spritesheets/ss-dragon-red.png',
+    json: 'assets/img/spritesheets/ss-dragon.json',
+    img800Red: 'assets/img/spritesheets/ss-dragon-800-red.png',
+    json800: 'assets/img/spritesheets/ss-dragon-800.json',
+  },
   
 };

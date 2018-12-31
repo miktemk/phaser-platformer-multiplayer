@@ -46,7 +46,7 @@ export module AcousterGame {
       this.sprite.animations.add('jump-shoot', ['jump-shoot1', 'jump-shoot2', 'jump-shoot3'], animDelay, false);
       this.sprite.animations.add('death', ['death1', 'death2', 'death3'], animDelay, false).onComplete.add(() => {
         this.sprite.kill();
-        this.chunks.position = this.sprite.position;
+        this.chunks.position.setTo(this.sprite.position.x, this.sprite.position.y);
         this.chunks.start(true, 2000, null, 10);
       });
       this.sprite.anchor.setTo(0.5, 1);
@@ -57,8 +57,8 @@ export module AcousterGame {
       this.sprite.position.setTo(config.respawnX, config.respawnY);
 
       // player chunks
-      this.chunks = game.add.emitter(0, 0, 10);
-      this.chunks.makeParticles(config.assetChunks, ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'chunk8', 'chunk9', 'chunk10'], 10, false, false);
+      this.chunks = game.add.emitter(0, 0, 20);
+      this.chunks.makeParticles(config.assetChunks, ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'chunk8', 'chunk9', 'chunk10'], 20, false, false);
       const angleRange = 40;
       this.chunks.setAngle(-90 - angleRange/2, -90 + angleRange/2, 2000, 3000);
       this.chunks.scale = new Phaser.Point(0.25, 0.25);
@@ -176,6 +176,7 @@ export module AcousterGame {
     players: Phaser.Group;
     coins: Phaser.Group;
     enemies: Phaser.Group;
+    monsters: Phaser.Group;
     bullets: Phaser.Group;
     playerz: ScrollerPlayer[] = [];
     explosions: Phaser.Group;
@@ -202,6 +203,11 @@ export module AcousterGame {
         AssetUrls.debugPlayerSpriteChunk.img,
         AssetUrls.debugPlayerSpriteChunk.json,
         Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
+      game.load.atlasJSONHash(
+        'dragon',
+        AssetUrls.dragon.img800Red,
+        AssetUrls.dragon.json800,
+        Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
     }
 
     create(game: Phaser.Game) {
@@ -221,6 +227,7 @@ export module AcousterGame {
       this.players = game.add.group();
       this.coins = game.add.group();
       this.enemies = game.add.group();
+      this.monsters = game.add.group();
 
       this.addPlatform(game, 100, game.world.centerY + 150);
       this.addPlatform(game, game.world.width-100, game.world.centerY + 150);
@@ -255,6 +262,8 @@ export module AcousterGame {
         explosion.anchor.setTo(0.5, 0.5);
         explosion.animations.add('kaboom', _.range(0, 20), 60, true);
       }, game);
+
+      this.test_addDragon();
 
       let player1 = new ScrollerPlayer(game, this.bullets, <ScrollerPlayerConfig> {
         assetSprite: 'player1',
@@ -311,6 +320,23 @@ export module AcousterGame {
       // this.game.world.setBounds(0, -ySkyAboveBounds, 8000, this.game.height + ySkyAboveBounds);
       this.game.world.setBounds(0, -ySkyAboveBounds, this.game.width, this.game.height + ySkyAboveBounds);
     }
+    test_addDragon() {
+      const animDelay = 10;
+      // let sprite = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, 'lava');
+      let sprite = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, 'dragon', 'idle');
+      sprite.animations.add('sit', ['idle'], 1, true);
+      sprite.animations.add('attack', ['attack1', 'attack2', 'attack3', 'attack4', 'attack5'], animDelay, true);
+      sprite.animations.add('fly', ['fly1', 'fly2'], animDelay, true);
+      sprite.animations.play('attack');
+      sprite.anchor.set(0.5, 1);
+      sprite.scale.set(0.6, 0.6);
+      sprite.health = 10;
+      // TODO: 4a3e03b6: dragon TMP!!!!
+      const bw = 200;
+      const bh = 200;
+      sprite.body.setSize(bw, bh, (sprite.width / sprite.scale.x - bw)/2, sprite.height / sprite.scale.y - bh);
+      this.monsters.add(sprite);
+    }
 
     update(game: Phaser.Game) {
       game.physics.arcade.collide(this.players, this.walls);
@@ -319,6 +345,10 @@ export module AcousterGame {
         console.log(`TODO: coin!!!!!!`);
       }, null, game);
       game.physics.arcade.overlap(this.players, this.enemies, (player: Phaser.Sprite, lava: Phaser.Sprite) => {
+        let sPlayer = this.playerz.find(x => x.sprite == player);
+        sPlayer.diePainfully();
+      }, null, game);
+      game.physics.arcade.overlap(this.players, this.monsters, (player: Phaser.Sprite, lava: Phaser.Sprite) => {
         let sPlayer = this.playerz.find(x => x.sprite == player);
         sPlayer.diePainfully();
       }, null, game);
@@ -332,7 +362,17 @@ export module AcousterGame {
         let sPlayer = this.playerz.find(x => x.sprite == player);
         sPlayer.diePainfully();
       }, null, game);
-      game.physics.arcade.collide(this.players, this.world);
+      game.physics.arcade.overlap(this.monsters, this.bullets, (monster: Phaser.Sprite, bullet: Phaser.Sprite) => {
+        bullet.kill();
+        this.kaboomHere(bullet.x, bullet.y);
+        monster.health--;
+        if (monster.health == 0) {
+          // TODO: 4a3e03b6: dragon TMP!!!!
+          monster.kill();
+          // let sMonster = this.monsterz.find(x => x.sprite == player);
+          // sMonster.diePainfully();
+        }
+      }, null, game);
 
       this.playerz.forEach(player => {
         player.update(game);
@@ -352,6 +392,9 @@ export module AcousterGame {
       //   game.debug.body(sss as Phaser.Sprite);
       // });
       // this.bullets.children.forEach(sss => {
+      //   game.debug.body(sss as Phaser.Sprite);
+      // });
+      // this.monsters.children.forEach(sss => {
       //   game.debug.body(sss as Phaser.Sprite);
       // });
     }
