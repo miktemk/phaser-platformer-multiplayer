@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "phaser-platformer-two-player": {
+    "phaser-platformer-multiplayer": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/phaser-platformer-two-player",
+            "outputPath": "dist/phaser-platformer-multiplayer",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -56,18 +56,19 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "phaser-platformer-two-player:build"
+            "browserTarget": "phaser-platformer-multiplayer:build",
+            "port": 4200
           },
           "configurations": {
             "production": {
-              "browserTarget": "phaser-platformer-two-player:build:production"
+              "browserTarget": "phaser-platformer-multiplayer:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "phaser-platformer-two-player:build"
+            "browserTarget": "phaser-platformer-multiplayer:build"
           }
         },
         "test": {
@@ -101,7 +102,7 @@
         }
       }
     },
-    "phaser-platformer-two-player-e2e": {
+    "phaser-platformer-multiplayer-e2e": {
       "root": "e2e/",
       "projectType": "application",
       "architect": {
@@ -109,11 +110,11 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "e2e/protractor.conf.js",
-            "devServerTarget": "phaser-platformer-two-player:serve"
+            "devServerTarget": "phaser-platformer-multiplayer:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "phaser-platformer-two-player:serve:production"
+              "devServerTarget": "phaser-platformer-multiplayer:serve:production"
             }
           }
         },
@@ -129,5 +130,5 @@
       }
     }
   },
-  "defaultProject": "phaser-platformer-two-player"
+  "defaultProject": "phaser-platformer-multiplayer"
 }

@@ -1,8 +1,8 @@
-# PhaserPlatformerTwoPlayer
+# Phaser platformer (multiplayer)
 
 This project was scaffolded with [Angular CLI](https://github.com/angular/angular-cli) version 6.2.8
 
-    ng new phaser-platformer-two-player --prefix mik --style less
+    ng new phaser-platformer-multiplayer --prefix mik --style less
 
 ### Build (v6)
 

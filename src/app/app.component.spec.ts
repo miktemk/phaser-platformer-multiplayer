@@ -16,16 +16,16 @@ describe('AppComponent', () => {
     expect(app).toBeTruthy();
   });
 
-  it(`should have as title 'phaser-platformer-two-player'`, () => {
+  it(`should have as title 'phaser-platformer-multiplayer'`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.debugElement.componentInstance;
-    expect(app.title).toEqual('phaser-platformer-two-player');
+    expect(app.title).toEqual('phaser-platformer-multiplayer');
   });
 
   it('should render title in a h1 tag', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.debugElement.nativeElement;
-    expect(compiled.querySelector('h1').textContent).toContain('Welcome to phaser-platformer-two-player!');
+    expect(compiled.querySelector('h1').textContent).toContain('Welcome to phaser-platformer-multiplayer!');
   });
 });
