@@ -13,6 +13,10 @@ export const AssetUrls = {
     imgGreen: 'assets/img/spritesheets/ss-debug-player-green.png',
     json: 'assets/img/spritesheets/ss-debug-player.json',
   },
+  playerMikhail: {
+    img: 'assets/img/atlas/satlas-mikhail.png',
+    json: 'assets/img/atlas/satlas-mikhail.json',
+  },
   debugPlayerSpriteChunk: {
     img: 'assets/img/atlas/satlas-debug-sprite-chunk.png',
     json: 'assets/img/atlas/satlas-debug-sprite-chunk.json',
@@ -24,5 +28,8 @@ export const AssetUrls = {
     img800Red: 'assets/img/spritesheets/ss-dragon-800-red.png',
     json800: 'assets/img/spritesheets/ss-dragon-800.json',
   },
-  
+  meatSteaks: {
+    img: 'assets/img/atlas/satlas-meat-steaks.png',
+    json: 'assets/img/atlas/satlas-meat-steaks.json',
+  },
 };

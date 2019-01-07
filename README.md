@@ -13,3 +13,5 @@ ng build --configuration=production --base-href //slingshot/ --output-path ../mi
 
 
 ### TODO
+
+ - TODO: 2913bc3d: move particle emitter creation to commons

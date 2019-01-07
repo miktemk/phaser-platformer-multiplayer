@@ -57,11 +57,12 @@ export module AcousterGame {
       this.sprite.position.setTo(config.respawnX, config.respawnY);
 
       // player chunks
+      // TODO: 2913bc3d: move particle emitter creation to commons
       this.chunks = game.add.emitter(0, 0, 20);
       this.chunks.makeParticles(config.assetChunks, ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'chunk8', 'chunk9', 'chunk10'], 20, false, false);
       const angleRange = 40;
       this.chunks.setAngle(-90 - angleRange/2, -90 + angleRange/2, 2000, 3000);
-      this.chunks.scale = new Phaser.Point(0.25, 0.25);
+      this.chunks.scale = new Phaser.Point(0.25, 0.25); // NOTE: 2913bc3d: scale seems to affect the speeds
       this.chunks.gravity = new Phaser.Point(0, 3000);
 
       // misc initialization
@@ -181,6 +182,7 @@ export module AcousterGame {
     playerz: ScrollerPlayer[] = [];
     explosions: Phaser.Group;
     lava: Phaser.TileSprite;
+    chunksGenericMeat: Phaser.Particles.Arcade.Emitter;
     
     preload(game: Phaser.Game) {
       game.load.image('rock', AssetUrls.rock);
@@ -190,8 +192,8 @@ export module AcousterGame {
       game.load.spritesheet('explosion', AssetUrls.explosion, 192, 192, 20);
       game.load.atlasJSONHash(
         'player1',
-        AssetUrls.debugPlayerSprite.img,
-        AssetUrls.debugPlayerSprite.json,
+        AssetUrls.playerMikhail.img,
+        AssetUrls.playerMikhail.json,
         Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
       game.load.atlasJSONHash(
         'player2',
@@ -207,6 +209,11 @@ export module AcousterGame {
         'dragon',
         AssetUrls.dragon.img800Red,
         AssetUrls.dragon.json800,
+        Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
+      game.load.atlasJSONHash(
+        'meat-steak-chunk',
+        AssetUrls.meatSteaks.img,
+        AssetUrls.meatSteaks.json,
         Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
     }
 
@@ -265,10 +272,18 @@ export module AcousterGame {
 
       this.test_addDragon();
 
+      // generic meat chunks
+      // TODO: 2913bc3d: move particle emitter creation to commons
+      this.chunksGenericMeat = game.add.emitter(0, 0, 40);
+      this.chunksGenericMeat.makeParticles('meat-steak-chunk', _.range(1, 13).map(x => x + ''), 40, false, false);
+      const angleRange = 40;
+      this.chunksGenericMeat.setAngle(-90 - angleRange/2, -90 + angleRange/2, 500, 700); // NOTE: 2913bc3d: scale seems to affect the speeds
+      this.chunksGenericMeat.gravity = new Phaser.Point(0, 700);
+
       let player1 = new ScrollerPlayer(game, this.bullets, <ScrollerPlayerConfig> {
         assetSprite: 'player1',
         assetChunks: 'player1-chunk',
-        scaleFactor: 0.2,
+        scaleFactor: 0.12,
         bodyW: 200, // NOTE: size of each frame in spritesheet: 484 x 534
         bodyH: 500,
         bodyHSquat: 220,
@@ -369,6 +384,8 @@ export module AcousterGame {
         if (monster.health == 0) {
           // TODO: 4a3e03b6: dragon TMP!!!!
           monster.kill();
+          this.chunksGenericMeat.position.setTo(monster.position.x, monster.position.y);
+          this.chunksGenericMeat.start(true, 2000, null, 8);
           // let sMonster = this.monsterz.find(x => x.sprite == player);
           // sMonster.diePainfully();
         }
