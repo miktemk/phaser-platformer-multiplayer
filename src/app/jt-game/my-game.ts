@@ -24,6 +24,8 @@ export module AcousterGame {
     keyFire: Phaser.Key;
   }
   export class ScrollerPlayer {
+    private readonly bulletTimeDelay = 300;
+
     public sprite: Phaser.Sprite;
     private chunks: Phaser.Particles.Arcade.Emitter;
     private bulletTime: number;
@@ -68,7 +70,7 @@ export module AcousterGame {
       // misc initialization
       this.sprite.body.collideWorldBounds = true;
       // this.sprite.body.onWorldBounds = true;
-      this.bulletTime = game.time.now + 200;
+      this.bulletTime = game.time.now + this.bulletTimeDelay;
     }
 
     private setBodyDims(bw: number, bh: number) {
@@ -145,7 +147,7 @@ export module AcousterGame {
 
     respawn() {
       this.isDead = false;
-      this.bulletTime = this.game.time.now + 200;
+      this.bulletTime = this.game.time.now + this.bulletTimeDelay;
       this.sprite.position.setTo(this.config.respawnX, this.config.respawnY);
       this.sprite.revive();
     }
@@ -157,7 +159,7 @@ export module AcousterGame {
           let sign = Math.sign(this.sprite.scale.x);
           bullet.reset(this.sprite.x + sign * 45, this.sprite.y - 75);
           bullet.body.velocity.x = sign * 750;
-          this.bulletTime = game.time.now + 200;
+          this.bulletTime = game.time.now + this.bulletTimeDelay;
         }
       }
     }
@@ -192,8 +194,10 @@ export module AcousterGame {
       game.load.spritesheet('explosion', AssetUrls.explosion, 192, 192, 20);
       game.load.atlasJSONHash(
         'player1',
-        AssetUrls.playerMikhail.img,
-        AssetUrls.playerMikhail.json,
+        // AssetUrls.playerMikhail.img,
+        // AssetUrls.playerMikhail.json,
+        AssetUrls.debugPlayerSprite.img,
+        AssetUrls.debugPlayerSprite.json,
         Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
       game.load.atlasJSONHash(
         'player2',
@@ -283,7 +287,8 @@ export module AcousterGame {
       let player1 = new ScrollerPlayer(game, this.bullets, <ScrollerPlayerConfig> {
         assetSprite: 'player1',
         assetChunks: 'player1-chunk',
-        scaleFactor: 0.12,
+        scaleFactor: 0.2,
+        // scaleFactor: 0.12, // NOTE: for sprite-mikhail
         bodyW: 200, // NOTE: size of each frame in spritesheet: 484 x 534
         bodyH: 500,
         bodyHSquat: 220,
@@ -315,18 +320,18 @@ export module AcousterGame {
         respawnY: game.world.centerY,
         
         // test on computer
-        // keyLeft: game.input.keyboard.addKey(Phaser.Keyboard.A),
-        // keyRight: game.input.keyboard.addKey(Phaser.Keyboard.D),
-        // keyUp: game.input.keyboard.addKey(Phaser.Keyboard.W),
-        // keyDown: game.input.keyboard.addKey(Phaser.Keyboard.S),
-        // keyFire: game.input.keyboard.addKey(Phaser.Keyboard.Q),
+        keyLeft: game.input.keyboard.addKey(Phaser.Keyboard.A),
+        keyRight: game.input.keyboard.addKey(Phaser.Keyboard.D),
+        keyUp: game.input.keyboard.addKey(Phaser.Keyboard.W),
+        keyDown: game.input.keyboard.addKey(Phaser.Keyboard.S),
+        keyFire: game.input.keyboard.addKey(Phaser.Keyboard.Q),
 
         // alphagrip
-        keyLeft: game.input.keyboard.addKey(Phaser.Keyboard.C),
-        keyRight: game.input.keyboard.addKey(Phaser.Keyboard.Y),
-        keyUp: game.input.keyboard.addKey(Phaser.Keyboard.Z),
-        keyDown: game.input.keyboard.addKey(Phaser.Keyboard.K),
-        keyFire: game.input.keyboard.addKey(Phaser.Keyboard.H),
+        // keyLeft: game.input.keyboard.addKey(Phaser.Keyboard.C),
+        // keyRight: game.input.keyboard.addKey(Phaser.Keyboard.Y),
+        // keyUp: game.input.keyboard.addKey(Phaser.Keyboard.Z),
+        // keyDown: game.input.keyboard.addKey(Phaser.Keyboard.K),
+        // keyFire: game.input.keyboard.addKey(Phaser.Keyboard.H),
       });
       this.players.add(player2.sprite);
       this.playerz.push(player2);
@@ -336,12 +341,14 @@ export module AcousterGame {
       this.game.world.setBounds(0, -ySkyAboveBounds, this.game.width, this.game.height + ySkyAboveBounds);
     }
     test_addDragon() {
-      const animDelay = 10;
+      const animFrameRate = 10;
+      const animFrameRateDeath = 50;
       // let sprite = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, 'lava');
       let sprite = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, 'dragon', 'idle');
       sprite.animations.add('sit', ['idle'], 1, true);
-      sprite.animations.add('attack', ['attack1', 'attack2', 'attack3', 'attack4', 'attack5'], animDelay, true);
-      sprite.animations.add('fly', ['fly1', 'fly2'], animDelay, true);
+      sprite.animations.add('attack', ['attack1', 'attack2', 'attack3', 'attack4', 'attack5'], animFrameRate, true);
+      sprite.animations.add('fly', ['fly1', 'fly2'], animFrameRate, true);
+      sprite.animations.add('death', ['attack1', 'attack2', 'attack1', 'attack2', 'attack1', 'attack2'], animFrameRateDeath, false);
       sprite.animations.play('attack');
       sprite.anchor.set(0.5, 1);
       sprite.scale.set(0.6, 0.6);
@@ -382,12 +389,7 @@ export module AcousterGame {
         this.kaboomHere(bullet.x, bullet.y);
         monster.health--;
         if (monster.health == 0) {
-          // TODO: 4a3e03b6: dragon TMP!!!!
-          monster.kill();
-          this.chunksGenericMeat.position.setTo(monster.position.x, monster.position.y);
-          this.chunksGenericMeat.start(true, 2000, null, 8);
-          // let sMonster = this.monsterz.find(x => x.sprite == player);
-          // sMonster.diePainfully();
+          this.monsterDiesInAgony(monster);
         }
       }, null, game);
 
@@ -398,6 +400,16 @@ export module AcousterGame {
       // this.game.camera.x += 1;
       // console.log(this.game.camera.x);
       this.lava.tilePosition.x = -1.1 * this.game.camera.x;
+    }
+
+    monsterDiesInAgony(monster: Phaser.Sprite) {
+      monster.animations.play('death').onComplete.addOnce(() => {
+        monster.kill();
+        this.chunksGenericMeat.position.setTo(monster.position.x, monster.position.y);
+        this.chunksGenericMeat.start(true, 2000, null, 8);
+        // let sMonster = this.monsterz.find(x => x.sprite == player);
+        // sMonster.diePainfully();
+      });
     }
     
     render(game: Phaser.Game) {
