@@ -8,6 +8,7 @@ export module AcousterGame {
   export class ScrollerPlayerConfig {
     assetSprite: string;
     assetChunks: string;
+    assetChunkKeys: string[];
     scaleFactor: number;
     bodyW: number;
     bodyH: number;
@@ -61,7 +62,7 @@ export module AcousterGame {
       // player chunks
       // TODO: 2913bc3d: move particle emitter creation to commons
       this.chunks = game.add.emitter(0, 0, 20);
-      this.chunks.makeParticles(config.assetChunks, ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'chunk8', 'chunk9', 'chunk10'], 20, false, false);
+      this.chunks.makeParticles(config.assetChunks, config.assetChunkKeys, 20, false, false);
       const angleRange = 40;
       this.chunks.setAngle(-90 - angleRange/2, -90 + angleRange/2, 2000, 3000);
       this.chunks.scale = new Phaser.Point(0.25, 0.25); // NOTE: 2913bc3d: scale seems to affect the speeds
@@ -194,20 +195,32 @@ export module AcousterGame {
       game.load.spritesheet('explosion', AssetUrls.explosion, 192, 192, 20);
       game.load.atlasJSONHash(
         'player1',
-        // AssetUrls.playerMikhail.img,
-        // AssetUrls.playerMikhail.json,
-        AssetUrls.debugPlayerSprite.img,
-        AssetUrls.debugPlayerSprite.json,
+        AssetUrls.playerMikhail.img, // CODE: dab4d273: code for real human sprites
+        AssetUrls.playerMikhail.json,
+        // AssetUrls.debugPlayerSprite.img,
+        // AssetUrls.debugPlayerSprite.json,
         Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
       game.load.atlasJSONHash(
         'player2',
-        AssetUrls.debugPlayerSprite.imgBlue,
-        AssetUrls.debugPlayerSprite.json,
+        AssetUrls.playerAdriana.img, // CODE: dab4d273: code for real human sprites
+        AssetUrls.playerAdriana.json,
+        // AssetUrls.debugPlayerSprite.imgBlue,
+        // AssetUrls.debugPlayerSprite.json,
+        Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
+      // game.load.atlasJSONHash(
+      //   'chunks-debug-sprite',
+      //   AssetUrls.debugPlayerSprite.chunkImg,
+      //   AssetUrls.debugPlayerSprite.chunkJson,
+      //   Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
+      game.load.atlasJSONHash(
+        'chunks-adriana',
+        AssetUrls.playerAdriana.chunkImg,
+        AssetUrls.playerAdriana.chunkJson,
         Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
       game.load.atlasJSONHash(
-        'player1-chunk',
-        AssetUrls.debugPlayerSpriteChunk.img,
-        AssetUrls.debugPlayerSpriteChunk.json,
+        'chunks-mikhail',
+        AssetUrls.playerMikhail.chunkImg,
+        AssetUrls.playerMikhail.chunkJson,
         Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
       game.load.atlasJSONHash(
         'dragon',
@@ -215,7 +228,7 @@ export module AcousterGame {
         AssetUrls.dragon.json800,
         Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
       game.load.atlasJSONHash(
-        'meat-steak-chunk',
+        'chunks-meat-steak',
         AssetUrls.meatSteaks.img,
         AssetUrls.meatSteaks.json,
         Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
@@ -279,19 +292,27 @@ export module AcousterGame {
       // generic meat chunks
       // TODO: 2913bc3d: move particle emitter creation to commons
       this.chunksGenericMeat = game.add.emitter(0, 0, 40);
-      this.chunksGenericMeat.makeParticles('meat-steak-chunk', _.range(1, 13).map(x => x + ''), 40, false, false);
+      this.chunksGenericMeat.makeParticles('chunks-meat-steak', _.range(1, 13).map(x => x + ''), 40, false, false);
       const angleRange = 40;
       this.chunksGenericMeat.setAngle(-90 - angleRange/2, -90 + angleRange/2, 500, 700); // NOTE: 2913bc3d: scale seems to affect the speeds
       this.chunksGenericMeat.gravity = new Phaser.Point(0, 700);
 
+
+      
+      // this.chunks.makeParticles(config.assetChunks, , 20, false, false); // CODE for satlas-debug-sprite-chunk
       let player1 = new ScrollerPlayer(game, this.bullets, <ScrollerPlayerConfig> {
         assetSprite: 'player1',
-        assetChunks: 'player1-chunk',
-        scaleFactor: 0.2,
-        // scaleFactor: 0.12, // NOTE: for sprite-mikhail
-        bodyW: 200, // NOTE: size of each frame in spritesheet: 484 x 534
-        bodyH: 500,
-        bodyHSquat: 220,
+        assetChunks: 'chunks-mikhail',
+        // assetChunkKeys: ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'chunk8', 'chunk9', 'chunk10'], // CODE: dab4d273: code for debug sprite
+        assetChunkKeys: ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'meat1', 'meat2', 'meat3', 'meat4', 'meat5', 'meat6', 'meat7', 'meat8', 'meat9'],
+        scaleFactor: 0.12, // CODE: dab4d273: code for real human sprites
+        // scaleFactor: 0.2,
+        // bodyW: 200, // NOTE: size of each frame in spritesheet: 484 x 534
+        // bodyH: 500,
+        // bodyHSquat: 220,
+        bodyW: 250, // CODE: dab4d273: code for real human sprites
+        bodyH: 700,
+        bodyHSquat: 320,
         gravity: playerGravity,
         velocityX: playerVelocityX,
         velocityJump: playerVelocityJump,
@@ -308,11 +329,17 @@ export module AcousterGame {
 
       let player2 = new ScrollerPlayer(game, this.bullets, <ScrollerPlayerConfig> {
         assetSprite: 'player2',
-        assetChunks: 'player1-chunk',
-        scaleFactor: 0.2,
-        bodyW: 200, // NOTE: size of each frame in spritesheet: 484 x 534
-        bodyH: 500,
-        bodyHSquat: 220,
+        assetChunks: 'chunks-adriana',
+        // assetChunkKeys: ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'chunk8', 'chunk9', 'chunk10'], // CODE: dab4d273: code for debug sprite
+        assetChunkKeys: ['ad-chunk1', 'ad-chunk2', 'ad-chunk3', 'ad-chunk4', 'ad-chunk5', 'ad-chunk6', 'ad-chunk7-head2', 'ad-chunk8', 'meat1', 'meat2', 'meat3', 'meat4', 'meat5', 'meat6', 'meat7', 'meat8', 'meat9'],
+        scaleFactor: 0.12, // CODE: dab4d273: code for real human sprites
+        // scaleFactor: 0.2,
+        // bodyW: 200, // NOTE: size of each frame in spritesheet: 484 x 534
+        // bodyH: 500,
+        // bodyHSquat: 220,
+        bodyW: 250, // CODE: dab4d273: code for real human sprites
+        bodyH: 700,
+        bodyHSquat: 320,
         gravity: playerGravity,
         velocityX: playerVelocityX,
         velocityJump: playerVelocityJump,
@@ -352,7 +379,7 @@ export module AcousterGame {
       sprite.animations.play('attack');
       sprite.anchor.set(0.5, 1);
       sprite.scale.set(0.6, 0.6);
-      sprite.health = 10;
+      sprite.health = 1;
       // TODO: 4a3e03b6: dragon TMP!!!!
       const bw = 200;
       const bh = 200;
@@ -413,7 +440,6 @@ export module AcousterGame {
     }
     
     render(game: Phaser.Game) {
-      // game.debug.bodyInfo(this.player1, 32, 32);
       // this.playerz.forEach(player => {
       //   game.debug.body(player.sprite);
       // });

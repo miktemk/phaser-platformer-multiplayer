@@ -12,14 +12,20 @@ export const AssetUrls = {
     imgBlue: 'assets/img/spritesheets/ss-debug-player-blue.png',
     imgGreen: 'assets/img/spritesheets/ss-debug-player-green.png',
     json: 'assets/img/spritesheets/ss-debug-player.json',
+    chunkImg: 'assets/img/atlas/satlas-debug-sprite-chunk.png',
+    chunkJson: 'assets/img/atlas/satlas-debug-sprite-chunk.json',
   },
   playerMikhail: {
     img: 'assets/img/atlas/satlas-mikhail.png',
     json: 'assets/img/atlas/satlas-mikhail.json',
+    chunkImg: 'assets/img/atlas/satlas-mikhail-chunk.png',
+    chunkJson: 'assets/img/atlas/satlas-mikhail-chunk.json',
   },
-  debugPlayerSpriteChunk: {
-    img: 'assets/img/atlas/satlas-debug-sprite-chunk.png',
-    json: 'assets/img/atlas/satlas-debug-sprite-chunk.json',
+  playerAdriana: {
+    img: 'assets/img/atlas/satlas-adriana.png',
+    json: 'assets/img/atlas/satlas-adriana.json',
+    chunkImg: 'assets/img/atlas/satlas-adriana-chunk.png',
+    chunkJson: 'assets/img/atlas/satlas-adriana-chunk.json',
   },
   dragon: {
     img: 'assets/img/spritesheets/ss-dragon.png',
