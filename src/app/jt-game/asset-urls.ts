@@ -31,11 +31,15 @@ export const AssetUrls = {
     img: 'assets/img/spritesheets/ss-dragon.png',
     imgRed: 'assets/img/spritesheets/ss-dragon-red.png',
     json: 'assets/img/spritesheets/ss-dragon.json',
-    img800Red: 'assets/img/spritesheets/ss-dragon-800-red.png',
-    json800: 'assets/img/spritesheets/ss-dragon-800.json',
+    img400Red: 'assets/img/spritesheets/ss-dragon-1200-red.png',
+    json400: 'assets/img/spritesheets/ss-dragon-1200.json',
   },
   meatSteaks: {
     img: 'assets/img/atlas/satlas-meat-steaks.png',
     json: 'assets/img/atlas/satlas-meat-steaks.json',
+  },
+  chunksDragon: {
+    img: 'assets/img/atlas/satlas-dragon-chunks.png',
+    json: 'assets/img/atlas/satlas-dragon-chunks.json',
   },
 };

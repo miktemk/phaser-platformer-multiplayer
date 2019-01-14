@@ -50,7 +50,7 @@ export module AcousterGame {
       this.sprite.animations.add('death', ['death1', 'death2', 'death3'], animDelay, false).onComplete.add(() => {
         this.sprite.kill();
         this.chunks.position.setTo(this.sprite.position.x, this.sprite.position.y);
-        this.chunks.start(true, 2000, null, 10);
+        this.chunks.start(true, 2000, null, 8);
       });
       this.sprite.anchor.setTo(0.5, 1);
       this.setBodyDims(config.bodyW, config.bodyH);
@@ -61,8 +61,8 @@ export module AcousterGame {
 
       // player chunks
       // TODO: 2913bc3d: move particle emitter creation to commons
-      this.chunks = game.add.emitter(0, 0, 20);
-      this.chunks.makeParticles(config.assetChunks, config.assetChunkKeys, 20, false, false);
+      this.chunks = game.add.emitter(0, 0, config.assetChunkKeys.length * 2);
+      this.chunks.makeParticles(config.assetChunks, config.assetChunkKeys, config.assetChunkKeys.length * 2, false, false);
       const angleRange = 40;
       this.chunks.setAngle(-90 - angleRange/2, -90 + angleRange/2, 2000, 3000);
       this.chunks.scale = new Phaser.Point(0.25, 0.25); // NOTE: 2913bc3d: scale seems to affect the speeds
@@ -185,6 +185,7 @@ export module AcousterGame {
     playerz: ScrollerPlayer[] = [];
     explosions: Phaser.Group;
     lava: Phaser.TileSprite;
+    chunksDragon: Phaser.Particles.Arcade.Emitter;
     chunksGenericMeat: Phaser.Particles.Arcade.Emitter;
     
     preload(game: Phaser.Game) {
@@ -224,13 +225,18 @@ export module AcousterGame {
         Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
       game.load.atlasJSONHash(
         'dragon',
-        AssetUrls.dragon.img800Red,
-        AssetUrls.dragon.json800,
+        AssetUrls.dragon.img400Red,
+        AssetUrls.dragon.json400,
         Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
       game.load.atlasJSONHash(
         'chunks-meat-steak',
         AssetUrls.meatSteaks.img,
         AssetUrls.meatSteaks.json,
+        Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
+      game.load.atlasJSONHash(
+        'chunks-dragon',
+        AssetUrls.chunksDragon.img,
+        AssetUrls.chunksDragon.json,
         Phaser.Loader.TEXTURE_ATLAS_JSON_HASH);
     }
 
@@ -290,21 +296,22 @@ export module AcousterGame {
       this.test_addDragon();
 
       // generic meat chunks
-      // TODO: 2913bc3d: move particle emitter creation to commons
-      this.chunksGenericMeat = game.add.emitter(0, 0, 40);
-      this.chunksGenericMeat.makeParticles('chunks-meat-steak', _.range(1, 13).map(x => x + ''), 40, false, false);
-      const angleRange = 40;
-      this.chunksGenericMeat.setAngle(-90 - angleRange/2, -90 + angleRange/2, 500, 700); // NOTE: 2913bc3d: scale seems to affect the speeds
-      this.chunksGenericMeat.gravity = new Phaser.Point(0, 700);
-
-
+      this.chunksGenericMeat = this.addChunks(game, 'chunks-meat-steak', [
+        ..._.range(1, 13).map(x => x + ''),
+      ]);
+      this.chunksDragon = this.addChunks(game, 'chunks-dragon', [
+        ..._.range(1, 10).map(x => `chunk${x}`),
+        ..._.range(1, 9).map(x => `meat${x}`),
+      ]);
       
-      // this.chunks.makeParticles(config.assetChunks, , 20, false, false); // CODE for satlas-debug-sprite-chunk
       let player1 = new ScrollerPlayer(game, this.bullets, <ScrollerPlayerConfig> {
         assetSprite: 'player1',
         assetChunks: 'chunks-mikhail',
         // assetChunkKeys: ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'chunk8', 'chunk9', 'chunk10'], // CODE: dab4d273: code for debug sprite
-        assetChunkKeys: ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'meat1', 'meat2', 'meat3', 'meat4', 'meat5', 'meat6', 'meat7', 'meat8', 'meat9'],
+        assetChunkKeys: [
+          ..._.range(1, 7).map(x => `chunk${x}`),
+          ..._.range(1, 9).map(x => `meat${x}`),
+        ],
         scaleFactor: 0.12, // CODE: dab4d273: code for real human sprites
         // scaleFactor: 0.2,
         // bodyW: 200, // NOTE: size of each frame in spritesheet: 484 x 534
@@ -331,7 +338,13 @@ export module AcousterGame {
         assetSprite: 'player2',
         assetChunks: 'chunks-adriana',
         // assetChunkKeys: ['chunk1', 'chunk2', 'chunk3', 'chunk4', 'chunk5', 'chunk6', 'chunk7', 'chunk8', 'chunk9', 'chunk10'], // CODE: dab4d273: code for debug sprite
-        assetChunkKeys: ['ad-chunk1', 'ad-chunk2', 'ad-chunk3', 'ad-chunk4', 'ad-chunk5', 'ad-chunk6', 'ad-chunk7-head2', 'ad-chunk8', 'meat1', 'meat2', 'meat3', 'meat4', 'meat5', 'meat6', 'meat7', 'meat8', 'meat9'],
+        // assetChunkKeys: ['ad-chunk1', 'ad-chunk2', 'ad-chunk3', 'ad-chunk4', 'ad-chunk5', 'ad-chunk6', 'ad-chunk7-head2', 'ad-chunk8', 'meat1', 'meat2', 'meat3', 'meat4', 'meat5', 'meat6', 'meat7', 'meat8', 'meat9'],
+        assetChunkKeys: [
+          ..._.range(1, 6).map(x => `ad-chunk${x}`),
+          'ad-chunk7-head2',
+          'ad-chunk8',
+          ..._.range(1, 9).map(x => `meat${x}`),
+        ],
         scaleFactor: 0.12, // CODE: dab4d273: code for real human sprites
         // scaleFactor: 0.2,
         // bodyW: 200, // NOTE: size of each frame in spritesheet: 484 x 534
@@ -369,13 +382,12 @@ export module AcousterGame {
     }
     test_addDragon() {
       const animFrameRate = 10;
-      const animFrameRateDeath = 50;
       // let sprite = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, 'lava');
       let sprite = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, 'dragon', 'idle');
       sprite.animations.add('sit', ['idle'], 1, true);
       sprite.animations.add('attack', ['attack1', 'attack2', 'attack3', 'attack4', 'attack5'], animFrameRate, true);
       sprite.animations.add('fly', ['fly1', 'fly2'], animFrameRate, true);
-      sprite.animations.add('death', ['attack1', 'attack2', 'attack1', 'attack2', 'attack1', 'attack2'], animFrameRateDeath, false);
+      sprite.animations.add('death', ['death1', 'death2', 'death3', 'death4'], animFrameRate, false);
       sprite.animations.play('attack');
       sprite.anchor.set(0.5, 1);
       sprite.scale.set(0.6, 0.6);
@@ -432,8 +444,8 @@ export module AcousterGame {
     monsterDiesInAgony(monster: Phaser.Sprite) {
       monster.animations.play('death').onComplete.addOnce(() => {
         monster.kill();
-        this.chunksGenericMeat.position.setTo(monster.position.x, monster.position.y);
-        this.chunksGenericMeat.start(true, 2000, null, 8);
+        this.chunksDragon.position.setTo(monster.position.x, monster.position.y);
+        this.chunksDragon.start(true, 2000, null, 10);
         // let sMonster = this.monsterz.find(x => x.sprite == player);
         // sMonster.diePainfully();
       });
@@ -477,6 +489,15 @@ export module AcousterGame {
       var explosion = this.explosions.getFirstExists(false);
       explosion.reset(x, y);
       explosion.play('kaboom', 30, false, true);
+    }
+
+    private addChunks(game: Phaser.Game, key: string, frames: string[]): Phaser.Particles.Arcade.Emitter {
+      const angleRangeChunks = 40;
+      let emitter = this.game.add.emitter(0, 0, 40);
+      emitter.makeParticles(key, frames, 40, false, false);
+      emitter.setAngle(-90 - angleRangeChunks/2, -90 + angleRangeChunks/2, 500, 700); // NOTE: 2913bc3d: scale seems to affect the speeds
+      emitter.gravity = new Phaser.Point(0, 700);
+      return emitter;
     }
 
   }
